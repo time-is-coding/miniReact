@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <button>点击我</button>
+
+    <script>
+        const btn = document.querySelector("button")
+
+        // const debounce = (cb, delay) =>{
+        //     let preTime = Date.now()
+        //     return () => {
+        //         if(Date.now() - preTime >= delay){
+        //             cb()
+        //             preTime = Date.now()
+        //         }
+        //     }
+        // }
+        const debounce = (cb, delay) =>{
+            let timer = null
+            return () => {
+                if(timer){
+                    clearTimeout(timer)
+                }
+                timer = setTimeout(()=>{
+                    cb()
+                },delay)
+
+            }
+        }
+        btn.onclick = debounce(()=>{
+            console.log("111111")
+        }, 1000)
+
+
+    </script>
+</body>
+</html>
