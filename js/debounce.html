@@ -13,6 +13,7 @@
     <script>
         const btn = document.querySelector("button")
 
+        // 立即执行，适用于点击事件
         // const debounce = (cb, delay) =>{
         //     let preTime = Date.now()
         //     return () => {
@@ -22,6 +23,8 @@
         //         }
         //     }
         // }
+
+        // 非立即执行，适用于输入框
         const debounce = (cb, delay) =>{
             let timer = null
             return () => {
@@ -37,6 +40,7 @@
         btn.onclick = debounce(()=>{
             console.log("111111")
         }, 1000)
+
 
 
     </script>
