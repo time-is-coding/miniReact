@@ -42,7 +42,7 @@ const postMsg = async (data: any) => {
         },
         body: JSON.stringify(data),
     });
-    if (res.status && res.status !== 200)
+    if (res.status && res.status !== 200){
         return false;
     }
     return res?.body?.getReader();
