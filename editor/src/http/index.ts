@@ -3,7 +3,7 @@ import type { AxiosInstance, AxiosResponse } from "axios";
 
 // 创建 Axios 实例
 const $axios: AxiosInstance = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.TIME_EDITOR_APP_PROXY as string,
   timeout: 30000,
 });
 

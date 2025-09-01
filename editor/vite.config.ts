@@ -25,4 +25,15 @@ export default defineConfig({
       "@": resolve(__dirname, "src"),
     },
   },
+  css: {
+    preprocessorOptions: {
+      less: {
+        javascriptEnabled: true,
+        additionalData: `
+          @import "${resolve(__dirname, "src/styles/variables.less")}";
+          @import "${resolve(__dirname, "src/styles/common.less")}";
+        `,
+      },
+    },
+  },
 });
