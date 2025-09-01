@@ -5,7 +5,7 @@ import RouteList from "./route";
 function App() {
   return (
     <BrowserRouter>
-        <RouteList />
+      <RouteList />
     </BrowserRouter>
   );
 }
