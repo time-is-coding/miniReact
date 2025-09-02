@@ -2,10 +2,10 @@
 import { BaseEditor } from "slate";
 import { ReactEditor } from "slate-react";
 import { HistoryEditor } from "slate-history";
-import type { Descendant } from "slate";
+import { HeadingElement, ListElement, ParagraphElement } from "@/components/Editor/type";
 
-type CustomElement = { type: "paragraph"; children: Descendant[] };
-type CustomText = { text: string };
+type CustomElement = ParagraphElement | HeadingElement | ListElement;
+type CustomText = { text: string; [key: string]: any };
 
 declare module "slate" {
   interface CustomTypes {
