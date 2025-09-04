@@ -1,5 +1,111 @@
+/**
+ * Markdown编辑器样式
+ */
 .editor {
-  border: none;
+  min-height: 600px;
+  padding: 20px;
+  font-size: 16px;
+  line-height: 1.8;
   outline: none;
-  height: 100%;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+/**
+ * 标题样式
+ */
+.editor h1,
+.editor h2,
+.editor h3,
+.editor h4,
+.editor h5,
+.editor h6 {
+  margin: 1.5em 0 0.5em 0;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.editor h1 {
+  font-size: 2em;
+  border-bottom: 1px solid #eaecef;
+  padding-bottom: 0.3em;
+}
+
+.editor h2 {
+  font-size: 1.5em;
+  border-bottom: 1px solid #eaecef;
+  padding-bottom: 0.3em;
+}
+
+.editor h3 {
+  font-size: 1.25em;
+}
+
+.editor h4 {
+  font-size: 1em;
+}
+
+.editor h5 {
+  font-size: 0.875em;
+}
+
+.editor h6 {
+  font-size: 0.85em;
+  color: #6a737d;
+}
+
+/**
+ * 列表样式
+ */
+.editor ul,
+.editor ol {
+  padding-left: 1.5em;
+  margin: 1em 0;
+}
+
+.editor li {
+  margin: 0.5em 0;
+}
+
+/**
+ * 代码样式
+ */
+.editor pre {
+  background-color: #f6f8fa;
+  padding: 16px;
+  border-radius: 3px;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.editor code {
+  background-color: #f6f8fa;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 85%;
+}
+
+.editor pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+/**
+ * 文本格式样式
+ */
+.editor strong {
+  font-weight: 600;
+}
+
+.editor em {
+  font-style: italic;
+}
+
+/**
+ * 段落样式
+ */
+.editor p {
+  margin: 1em 0;
 }
