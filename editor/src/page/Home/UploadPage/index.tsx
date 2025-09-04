@@ -13,6 +13,7 @@ const UploadPage = () => {
     action: "https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload",
     onChange(info) {
       console.log(info, "=====");
+      console.log("测试插件")
     },
     fileList: [],
   };
