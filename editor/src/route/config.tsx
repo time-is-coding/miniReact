@@ -5,6 +5,7 @@ const Home = lazy(() => import("@/page/Home"));
 const Login = lazy(() => import("@/page/Login"));
 const UploadPage = lazy(() => import("@/page/Home/UploadPage"));
 const EditorPage = lazy(() => import("@/page/Home/EditorPage"));
+const Test = lazy(() => import("@/page/Test"));
 const NotFind = lazy(() => import("@/page/NotFind"));
 
 // 路由配置，预留权限、icon等字段
@@ -49,6 +50,13 @@ const routes: RouteConfig[] = [
     auth: false,
     icon: null,
   },
+  // {
+  //   title: "test",
+  //   path: "/test",
+  //   element: <Test />,
+  //   auth: false,
+  //   icon: null,
+  // },
   {
     title: "404",
     path: "/notfound",
