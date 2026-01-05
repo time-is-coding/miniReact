@@ -11,6 +11,12 @@ function MyComponent(props) {
     console.log("handleClick_1 clicked:", count);
   };
 
+  ReactDom.useEffect(() => {
+    setTimeout(() => {
+      setCount((c) => c + 1);
+    }, 3000);
+  }, []);
+
   const handleClick_2 = () => {
     setCount2((c) => c + 1);
     console.log("handleClick_2 clicked:", count2);

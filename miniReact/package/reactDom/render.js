@@ -177,6 +177,26 @@ function updateHostComponent(fiber) {
   reconcileChildren(fiber, elements);
 }
 
+export function useEffect(callback, deps) {
+  console.log("useEffect执行");
+  const oldHook = wipFiber.alternate && wipFiber.alternate.hooks && wipFiber.alternate.hooks[hookIndex];
+  const hasChanged = !oldHook || !deps || deps.some((dep, i) => dep !== oldHook.deps[i]);
+
+  const hook = {
+    deps,
+  };
+
+  if (hasChanged) {
+    if (oldHook && oldHook.cleanup) {
+      oldHook.cleanup(); // 清理上一次的副作用
+    }
+    hook.cleanup = callback(); // 执行副作用，并保存清理函数
+  }
+
+  wipFiber.hooks.push(hook);
+  hookIndex++;
+}
+
 export function useState(initial) {
   console.log("useState执行");
   const oldHook = wipFiber.alternate && wipFiber.alternate.hooks && wipFiber.alternate.hooks[hookIndex];

@@ -1,6 +1,7 @@
-import { render, useState } from "./render.js";
+import { render, useState, useEffect } from "./render.js";
 
 export default {
   render,
   useState,
+  useEffect,
 };
