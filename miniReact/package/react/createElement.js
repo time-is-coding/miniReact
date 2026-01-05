@@ -6,7 +6,6 @@ export const createElement = (type, props, ...children) => {
       children: children.map((child) => (typeof child === "object" ? child : createTextElement(child))),
     },
   };
-  console.log("createElement:", element);
   return element;
 };
 

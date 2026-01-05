@@ -1,4 +1,5 @@
 import { updateDom } from "./updateDom";
+import { commitDeletion } from "./commitDeletion";
 /**
  * commitWork 函数
  * 递归提交Fiber节点的DOM更新
@@ -9,7 +10,13 @@ export function commitWork(fiber) {
     return;
   }
 
-  const domParent = fiber.parent.dom; // 获取父DOM节点
+  // 函数组件本身没有dom属性，需要向上寻找
+  let domParentFiber = fiber.parent;
+  while (!domParentFiber.dom) {
+    domParentFiber = domParentFiber.parent;
+  }
+
+  const domParent = domParentFiber.dom; // 获取父DOM节点
   if (fiber.effectTag === "PLACEMENT" && fiber.dom != null) {
     domParent.appendChild(fiber.dom);
   }
@@ -19,7 +26,7 @@ export function commitWork(fiber) {
   }
 
   if (fiber.effectTag === "DELETION") {
-    domParent.removeChild(fiber.dom);
+    commitDeletion(fiber, domParent);
     return;
   }
 

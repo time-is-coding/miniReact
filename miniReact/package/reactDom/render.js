@@ -1,14 +1,18 @@
 import { commitWork } from "./commitWork";
-import { performUnitOfWork } from "./performUnitOfWork";
+import { createDom } from "./createDom";
 
 // 全局变量
 // nextUnitOfWork: 下一个需要处理的工作单元（Fiber节点）
 let nextUnitOfWork = null;
 // wipRoot: 当前正在构建的Fiber树的根节点
 let wipRoot = null;
-//  currentRoot: 上一次提交到DOM的Fiber树的根节点
+//  currentRoot: 上一次提交到DOM的Fiber树的根节点(也就是页面上展示的内容)
 let currentRoot = null;
+// 需要删除的内容
 let deletions = null;
+
+let wipFiber = null;
+let hookIndex = null;
 
 /**
  * render 函数
@@ -22,7 +26,6 @@ export function render(element, container) {
     props: { children: [element] }, // 根节点的子元素
     alternate: currentRoot, // 保存上一次的Fiber树，用于比较
   };
-  console.log("wipRoot:", wipRoot);
   deletions = [];
   nextUnitOfWork = wipRoot; // 设置下一个工作单元为根节点
 }
@@ -117,10 +120,94 @@ export function workLoop(deadline) {
   }
 
   if (!nextUnitOfWork && wipRoot) {
+    console.log("workLoop done, wipRoot:", wipRoot);
     commitRoot(); // 如果没有工作单元且Fiber树构建完成，提交更新
   }
 
   requestIdleCallback(workLoop); // 继续下一次工作
+}
+
+/**
+ * performUnitOfWork 函数
+ * 执行当前Fiber节点的工作，并返回下一个工作单元
+ * @param {Object} fiber - 当前的Fiber节点
+ * @returns {Object|null} - 下一个需要处理的Fiber节点
+ */
+export function performUnitOfWork(fiber) {
+  const isFunctionComponent = fiber.type instanceof Function;
+
+  if (isFunctionComponent) {
+    updateFunctionComponent(fiber);
+  } else {
+    updateHostComponent(fiber);
+  }
+
+  // 3. 返回下一个工作单元
+  if (fiber.child) {
+    return fiber.child;
+  }
+  let nextFiber = fiber;
+  while (nextFiber) {
+    if (nextFiber.sibling) {
+      return nextFiber.sibling;
+    }
+    nextFiber = nextFiber.parent;
+  }
+}
+
+function updateFunctionComponent(fiber) {
+  console.log("updateFunctionComponent执行");
+  wipFiber = fiber;
+  wipFiber.hooks = [];
+  hookIndex = 0;
+  // TODO 更新函数组件
+  const children = [fiber.type(fiber.props)]; // 执行函数组件，直到此时，函数中的setState才会被调用
+  reconcileChildren(fiber, children);
+}
+
+function updateHostComponent(fiber) {
+  // 添加节点元素到dom
+  // 如果没有dom属性，根据fiber新构建
+  if (!fiber.dom) {
+    fiber.dom = createDom(fiber);
+  }
+  // 遍历节点的children属性创建Fiber对象
+  const elements = fiber.props.children;
+  // 调和fiber对象，设置状态：添加、更新和删除
+  reconcileChildren(fiber, elements);
+}
+
+export function useState(initial) {
+  console.log("useState执行");
+  const oldHook = wipFiber.alternate && wipFiber.alternate.hooks && wipFiber.alternate.hooks[hookIndex];
+
+  const hook = {
+    state: oldHook ? oldHook.state : initial,
+    queue: [],
+  };
+
+  // 执行所有setState的回调函数
+  const actions = oldHook ? oldHook.queue : [];
+  actions.forEach((action) => {
+    hook.state = action(hook.state);
+  });
+
+  const setState = (action) => {
+    // 推入队列
+    hook.queue.push(action);
+    // 将下一次任务设为当前根fiber
+    wipRoot = {
+      dom: currentRoot.dom,
+      props: currentRoot.props,
+      alternate: currentRoot,
+    };
+    deletions = [];
+    nextUnitOfWork = wipRoot;
+  };
+
+  wipFiber.hooks.push(hook);
+  hookIndex++;
+  return [hook.state, setState];
 }
 
 // 启动Fiber树的构建循环
