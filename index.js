@@ -12,9 +12,10 @@ function MyComponent(props) {
   };
 
   ReactDom.useEffect(() => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setCount((c) => c + 1);
-    }, 3000);
+    }, 1000);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleClick_2 = () => {
