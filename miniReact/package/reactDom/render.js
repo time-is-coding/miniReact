@@ -1,8 +1,14 @@
+import { commitWork } from "./commitWork";
+import { performUnitOfWork } from "./performUnitOfWork";
+
 // 全局变量
 // nextUnitOfWork: 下一个需要处理的工作单元（Fiber节点）
 let nextUnitOfWork = null;
 // wipRoot: 当前正在构建的Fiber树的根节点
 let wipRoot = null;
+//  currentRoot: 上一次提交到DOM的Fiber树的根节点
+let currentRoot = null;
+let deletions = null;
 
 /**
  * render 函数
@@ -14,10 +20,88 @@ export function render(element, container) {
   wipRoot = {
     dom: container, // 容器DOM节点
     props: { children: [element] }, // 根节点的子元素
-    alternate: null, // 保存上一次的Fiber树，用于比较
+    alternate: currentRoot, // 保存上一次的Fiber树，用于比较
   };
   console.log("wipRoot:", wipRoot);
+  deletions = [];
   nextUnitOfWork = wipRoot; // 设置下一个工作单元为根节点
+}
+
+/**
+ * commitRoot 函数
+ * 提交Fiber树的更新到DOM
+ */
+export function commitRoot() {
+  // 优先进行删除操作
+  deletions.forEach(commitWork);
+  commitWork(wipRoot.child); // 提交根节点的子节点
+  currentRoot = wipRoot; // 更新当前根节点
+  wipRoot = null; // 清空根节点
+  console.log("commitRoot finished");
+}
+
+export function reconcileChildren(wipFiber, elements) {
+  // TODO 调和变更
+  let index = 0;
+  let oldFiber = wipFiber.alternate && wipFiber.alternate.child;
+  let prevSibling = null;
+
+  // TODO 思考：为什么不能用 oldFiber !== null
+  // oldFiber一直为undefined，会造成死循环
+  while (index < elements.length || oldFiber != null) {
+    const element = elements[index];
+    let newFiber = null;
+
+    const sameType = oldFiber && element && element.type == oldFiber.type;
+
+    // 更新
+    if (sameType) {
+      newFiber = {
+        type: oldFiber.type,
+        props: element.props,
+        dom: oldFiber.dom,
+        parent: wipFiber,
+        alternate: oldFiber,
+        effectTag: "UPDATE",
+      };
+    }
+
+    // 重新创建
+    if (element && !sameType) {
+      newFiber = {
+        type: element.type,
+        props: element.props,
+        dom: null,
+        parent: wipFiber,
+        alternate: null,
+        effectTag: "PLACEMENT",
+      };
+    }
+
+    // 删除
+    if (oldFiber && !sameType) {
+      oldFiber.effectTag = "DELETION";
+      deletions.push(oldFiber);
+    }
+
+    // 同时遍历旧fiber树
+    if (oldFiber) {
+      oldFiber = oldFiber.sibling;
+    }
+
+    // 父fiber的child指向第一个子fiber
+    if (index === 0) {
+      wipFiber.child = newFiber;
+    } else if (element) {
+      /* 当oldFiber != null时，需要判断element存在才设置sibling */
+      // 如果存在兄弟节点，通过sibling关联
+      prevSibling.sibling = newFiber;
+    }
+
+    // 暂存上一个兄弟节点
+    prevSibling = newFiber;
+    index++;
+  }
 }
 
 /**
@@ -25,7 +109,7 @@ export function render(element, container) {
  * 浏览器空闲时执行的主循环，用于协调Fiber树的构建
  * @param {IdleDeadline} deadline - 浏览器提供的空闲时间对象
  */
-function workLoop(deadline) {
+export function workLoop(deadline) {
   let shouldYield = false; // 是否需要暂停工作
   while (nextUnitOfWork && !shouldYield) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork); // 执行当前工作单元
@@ -37,106 +121,6 @@ function workLoop(deadline) {
   }
 
   requestIdleCallback(workLoop); // 继续下一次工作
-}
-
-/**
- * performUnitOfWork 函数
- * 执行当前Fiber节点的工作，并返回下一个工作单元
- * @param {Object} fiber - 当前的Fiber节点
- * @returns {Object|null} - 下一个需要处理的Fiber节点
- */
-function performUnitOfWork(fiber) {
-  // 1. 创建当前Fiber节点对应的DOM节点
-  if (!fiber.dom) {
-    fiber.dom = createDom(fiber);
-  }
-
-  // 2. 为当前Fiber节点的子元素创建Fiber节点
-  const elements = fiber.props.children;
-  let index = 0;
-  let prevSibling = null;
-
-  while (index < elements.length) {
-    const element = elements[index];
-    const newFiber = {
-      type: element.type, // 元素类型
-      props: element.props, // 元素属性
-      parent: fiber, // 父Fiber节点
-      dom: null, // 对应的DOM节点
-    };
-
-    if (index === 0) {
-      fiber.child = newFiber; // 第一个子节点作为child
-    } else {
-      prevSibling.sibling = newFiber; // 其他子节点作为sibling
-    }
-
-    prevSibling = newFiber;
-    index++;
-  }
-
-  // 3. 返回下一个工作单元
-  if (fiber.child) {
-    return fiber.child;
-  }
-  let nextFiber = fiber;
-  while (nextFiber) {
-    if (nextFiber.sibling) {
-      return nextFiber.sibling;
-    }
-    nextFiber = nextFiber.parent;
-  }
-}
-
-/**
- * commitRoot 函数
- * 提交Fiber树的更新到DOM
- */
-function commitRoot() {
-  commitWork(wipRoot.child); // 提交根节点的子节点
-  wipRoot = null; // 清空根节点
-  console.log("commitRoot finished");
-}
-
-/**
- * commitWork 函数
- * 递归提交Fiber节点的DOM更新
- * @param {Object} fiber - 当前的Fiber节点
- */
-function commitWork(fiber) {
-  if (!fiber) {
-    return;
-  }
-
-  const domParent = fiber.parent.dom; // 获取父DOM节点
-  if (fiber.dom) {
-    domParent.appendChild(fiber.dom); // 将当前DOM节点添加到父节点
-  }
-
-  commitWork(fiber.child); // 递归提交子节点
-  commitWork(fiber.sibling); // 递归提交兄弟节点
-}
-
-/**
- * createDom 函数
- * 根据Fiber节点创建对应的DOM节点
- * @param {Object} fiber - 当前的Fiber节点
- * @returns {HTMLElement|Text} - 创建的DOM节点
- */
-function createDom(fiber) {
-  const dom =
-    fiber.type === "TEXT_ELEMENT"
-      ? document.createTextNode("") // 创建文本节点
-      : document.createElement(fiber.type); // 创建元素节点
-
-  // 设置DOM属性
-  Object.keys(fiber.props)
-    .filter((key) => key !== "children") // 过滤掉children属性
-    .forEach((name) => {
-      dom[name] = fiber.props[name];
-    });
-
-  return dom;
 }
 
 // 启动Fiber树的构建循环
