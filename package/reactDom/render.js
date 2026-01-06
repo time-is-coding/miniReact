@@ -1,6 +1,5 @@
 import { commitWork } from "./commitWork";
 import { createDom } from "./createDom";
-import { dispatchEvent } from "./eventSystem";
 
 // 全局变量
 // nextUnitOfWork: 下一个需要处理的工作单元（Fiber节点）
