@@ -1,3 +1,4 @@
+import { addEventListener, removeEventListener } from "./eventSystem";
 const isEvent = (key) => key.startsWith("on");
 const isProperty = (key) => key !== "children" && !isEvent(key);
 const isNew = (prev, next) => (key) => prev[key] !== next[key];
@@ -10,7 +11,7 @@ export function updateDom(dom, prevProps, nextProps) {
     .filter((key) => !(key in nextProps) || isNew(prevProps, nextProps)(key))
     .forEach((name) => {
       const eventType = name.toLowerCase().substring(2);
-      dom.removeEventListener(eventType, prevProps[name]);
+      removeEventListener(dom, eventType);
     });
 
   // 删除旧属性
@@ -35,6 +36,6 @@ export function updateDom(dom, prevProps, nextProps) {
     .filter(isNew(prevProps, nextProps))
     .forEach((name) => {
       const eventType = name.toLowerCase().substring(2);
-      dom.addEventListener(eventType, nextProps[name]);
+      addEventListener(dom, eventType, nextProps[name]);
     });
 }

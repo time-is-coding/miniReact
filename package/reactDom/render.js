@@ -1,5 +1,6 @@
 import { commitWork } from "./commitWork";
 import { createDom } from "./createDom";
+import { dispatchEvent } from "./eventSystem";
 
 // 全局变量
 // nextUnitOfWork: 下一个需要处理的工作单元（Fiber节点）
@@ -213,8 +214,9 @@ export function useState(initial) {
   });
 
   const setState = (action) => {
+    const updateFn = typeof action === "function" ? action : () => action;
     // 推入队列
-    hook.queue.push(action);
+    hook.queue.push(updateFn);
     // 将下一次任务设为当前根fiber
     wipRoot = {
       dom: currentRoot.dom,

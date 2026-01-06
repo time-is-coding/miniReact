@@ -7,16 +7,18 @@ function MyComponent(props) {
   const [count2, setCount2] = ReactDom.useState(0);
 
   const handleClick_1 = () => {
-    setCount((c) => c + 1);
+    setCount(count + 1);
+    setCount(count + 1);
+    setCount((count) => count + 1);
     console.log("handleClick_1 clicked:", count);
   };
 
-  ReactDom.useEffect(() => {
-    const timer = setTimeout(() => {
-      setCount((c) => c + 1);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
+  // ReactDom.useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     setCount((c) => c + 1);
+  //   }, 1000);
+  //   return () => clearTimeout(timer);
+  // }, []);
 
   const handleClick_2 = () => {
     setCount2((c) => c + 1);
@@ -26,7 +28,7 @@ function MyComponent(props) {
   return React.createElement(
     "div",
     null,
-    React.createElement("button", { onClick: handleClick_1 }, `Count, ${count}`),
+    React.createElement("button", { onClick: handleClick_1, className: "button1" }, `Count, ${count}`),
     React.createElement("button", { onClick: handleClick_2 }, `Count2: ${count2}`),
     `hellow,${props.name}`
   );
